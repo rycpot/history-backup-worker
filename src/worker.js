@@ -37,6 +37,10 @@
  *          if a *different* device currently owns this bucket. The first
  *          device ever to write claims ownership automatically; every
  *          write after that must come from the same device_id.
+ *          meta/owner.json is only rewritten when ownership changes or
+ *          lastSyncTime is more than OWNER_WRITE_THROTTLE_MS stale, not on
+ *          every single date -- so lastSyncTime reflects "last write within
+ *          the throttle window", not the literal most recent PUT.
  *
  *   POST /confirm-takeover   body: { deviceId }
  *       -> forcibly re-points ownership at `deviceId`, keeping a short
@@ -57,6 +61,9 @@ const OBJECT_PREFIX = 'dates/';
 const OWNER_KEY = 'meta/owner.json';
 const MAX_PREVIOUS_OWNERS = 5;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+// How stale meta/owner.json's lastSyncTime is allowed to get before a PUT
+// bothers rewriting it. See handlePutObject.
+const OWNER_WRITE_THROTTLE_MS = 60 * 1000;
 
 export default {
     async fetch(request, env) {
@@ -167,7 +174,14 @@ async function handlePutObject(env, date, request) {
         return jsonResponse({ error: 'missing_device_id' }, 400);
     }
 
-    const owner = await readOwner(env);
+    // readOwner (an R2 GET) and request.arrayBuffer() (draining the request
+    // body) don't depend on each other, so run them concurrently instead of
+    // paying both round-trips/reads in series -- saves one full R2 GET's
+    // worth of latency on every single PUT.
+    const [owner, body] = await Promise.all([
+        readOwner(env),
+        request.arrayBuffer()
+    ]);
     if (owner && owner.deviceId && owner.deviceId !== deviceId) {
         return jsonResponse({
             error: 'device_mismatch',
@@ -176,16 +190,29 @@ async function handlePutObject(env, date, request) {
         }, 409);
     }
 
-    const body = await request.arrayBuffer();
     const put = await env.BUCKET.put(objectKey(date), body, {
         httpMetadata: { contentType: 'application/gzip' }
     });
 
-    await writeOwner(env, {
-        deviceId,
-        lastSyncTime: Date.now(),
-        previous: owner ? owner.previous : []
-    });
+    // meta/owner.json only needs a write when ownership is actually
+    // changing (first-ever claim) or when lastSyncTime has gone stale by
+    // more than OWNER_WRITE_THROTTLE_MS -- rewriting it on every single
+    // date PUT (a full History Backup can mean thousands of them) costs an
+    // extra R2 write per date for no correctness benefit, since the
+    // device_mismatch check above only cares about deviceId, not exactly
+    // how fresh lastSyncTime is. This makes lastSyncTime "last write within
+    // the throttle window" rather than "the literal last write", which is
+    // the intentional trade-off.
+    const now = Date.now();
+    const ownerIsStale = !owner || !owner.deviceId || owner.lastSyncTime == null
+        || (now - owner.lastSyncTime) >= OWNER_WRITE_THROTTLE_MS;
+    if (ownerIsStale) {
+        await writeOwner(env, {
+            deviceId,
+            lastSyncTime: now,
+            previous: owner ? owner.previous : []
+        });
+    }
 
     return jsonResponse({ etag: put.httpEtag });
 }
