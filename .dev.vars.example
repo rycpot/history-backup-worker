@@ -1,0 +1,13 @@
+# Copy this file to .dev.vars for local development with `wrangler dev`.
+#
+# In production, this value is never stored in git — it's set as a real
+# Worker secret, either via `wrangler secret put BACKUP_TOKEN` or by
+# filling in the field Cloudflare's "Deploy to Cloudflare" button shows
+# you during setup (which reads this file to know what to ask for).
+#
+# Any long random string works. Generate one with:
+#   openssl rand -hex 32
+# or paste one from a password generator. Save whatever you use here —
+# you'll paste this same value into the extension's Settings > Cloud
+# Backup > "Backup token" field.
+BACKUP_TOKEN=replace-with-a-long-random-string
