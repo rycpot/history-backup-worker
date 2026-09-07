@@ -1,0 +1,22 @@
+name = "history-backup-worker"
+main = "src/worker.js"
+compatibility_date = "2026-01-01"
+
+# Explicit so Workers Builds doesn't warn about defaulting these on every
+# deploy. workers.dev is what gives you the https://<name>.<subdomain>
+# .workers.dev URL used throughout this repo's docs.
+workers_dev = true
+preview_urls = true
+
+# Create the bucket first: `wrangler r2 bucket create history-backup-data`
+# Then this binding gives the Worker direct access to it -- no R2 API
+# key/secret needed anywhere, including in this file.
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "history-backup-data"
+
+# BACKUP_TOKEN is set as a secret, not here, so it never ends up in source
+# control:  wrangler secret put BACKUP_TOKEN
+# Generate a long random value for it -- this is the only credential in
+# the whole system, and it's the one the extension's Settings page asks you
+# to paste back in as "Backup token".

@@ -1,0 +1,24 @@
+{
+  "name": "history-backup-worker",
+  "private": true,
+  "version": "1.0.0",
+  "packageManager": "npm@10.9.0",
+  "description": "Cloudflare Worker backend for the Full Browsing History extension's Cloud Backup feature. Proxies gzipped daily history TSVs to a private R2 bucket you own.",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "devDependencies": {
+    "wrangler": "^4.125.0"
+  },
+  "cloudflare": {
+    "bindings": {
+      "BACKUP_TOKEN": {
+        "description": "The extension's Cloud Backup password. Any long random string works — generate one with `openssl rand -hex 32`, or paste one from a password generator. Save it: you'll paste this same value into the extension's Settings > Cloud Backup > \"Backup token\" field."
+      },
+      "BUCKET": {
+        "description": "R2 bucket for storing your gzipped daily history backups. Created and bound automatically — no action needed here."
+      }
+    }
+  }
+}
