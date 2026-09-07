@@ -15,7 +15,8 @@ below into your terminal, in order, from inside that folder.
 Commands are shown for **macOS/Linux/Git Bash**, with a **Windows
 PowerShell** variant wherever the two differ.
 
-### 1. Install Wrangler
+### 1. Install Wrangler 
+(you can skip this step if you have it already installed. Check by ```node -v``` and ```wrangler -v```)
 
 ```bash
 npm install -g wrangler
@@ -61,7 +62,7 @@ Copy the printed Worker URL, e.g.
 
 ```bash
 TOKEN=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
-echo "$TOKEN"   # copy and save this now — you won't see it again
+echo "$TOKEN"   # copy and save this now — you will not see it again
 printf "%s" "$TOKEN" | wrangler secret put BACKUP_TOKEN
 ```
 
@@ -69,7 +70,7 @@ printf "%s" "$TOKEN" | wrangler secret put BACKUP_TOKEN
 
 ```powershell
 $TOKEN = node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-Write-Output $TOKEN   # copy and save this now — you won't see it again
+Write-Output $TOKEN   # copy and save this now — you will not see it again
 $TOKEN | wrangler secret put BACKUP_TOKEN
 ```
 
