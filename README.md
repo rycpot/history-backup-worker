@@ -96,6 +96,12 @@ curl -H "Authorization: Bearer $TOKEN" "WORKER_URL/manifest"
 Should return `{"dates":[],"owner":null}` on a fresh deploy. Replace
 `WORKER_URL` with the URL from step 4 (no trailing slash).
 
+### Screenshot of commands execution.
+I already have Node.js installed. I also have Cloudflare connected. So the screenshot does not show those steps (1 and 2 from above).
+
+<img width="1778" height="1648" alt="CleanShot 2026-09-07 at 17 44 48@2x" src="https://github.com/user-attachments/assets/a3e25500-f8dc-48da-b0eb-26613bfbf684" />
+
+
 ## What this Worker does
 
 See the doc comment at the top of `src/worker.js` for the full endpoint
