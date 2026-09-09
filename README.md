@@ -21,6 +21,10 @@ PowerShell** variant wherever the two differ.
 ```bash
 npm install -g wrangler
 ```
+if it gives an EACCES permission error then use this and enter the system/admin password as asked.
+```bash
+sudo npm install -g wrangler
+```
 
 Requires [Node.js](https://nodejs.org) (which includes npm) to already be
 installed — same command on every OS.
