@@ -21,7 +21,7 @@ PowerShell** variant wherever the two differ.
 ```bash
 npm install -g wrangler
 ```
-if it gives an EACCES permission error then use this and enter the system/admin password as asked.
+*if it gives an EACCES permission error then use this and enter the system/admin password as asked.
 ```bash
 sudo npm install -g wrangler
 ```
